@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledgeable Chatbot PRO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        #messages {
+            height: 300px;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        #user-input {
+            display: flex;
+            padding: 10px;
+        }
+        #input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+            outline: none;
+        }
+        #send, #voice {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-top: 1px solid #ccc;
+            margin-left: 5px;
+        }
+        #send:hover, #voice:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user {
+            text-align: right;
+            color: blue;
+        }
+        .bot {
+            text-align: left;
+            color: green;
+        }
+        .feedback {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        .suggestions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .suggestion {
+            background-color: #e0e0e0;
+            padding: 5px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+</html>

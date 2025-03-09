@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledgeable Chatbot with Google Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        #messages {
+            height: 300px;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        #user-input {
+            display: flex;
+            padding: 10px;
+        }
+        #input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+            outline: none;
+        }
+        #send, #voice {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-top: 1px solid #ccc;
+            margin-left: 5px;
+        }
+        #send:hover, #voice:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user {
+            text-align: right;
+            color: blue;
+        }
+        .bot {
+            text-align: left;
+            color: green;
+        }
+        .feedback {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        .suggestions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .suggestion {
+            background-color: #e0e0e0;
+            padding: 5px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #modeSelector {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-container">
+        <div id="modeSelector">
+            <label for="mode">Select Mode:</label>
+            <select id="mode">
+                <option value="PRO">PRO</option>
+                <option value="BETA">BETA</option>
+                <option value="PRO2">PRO2</option>
+            </select>
+        </div>
+        <div id="messages"></div>
+        <div id="user-input">
+            <input type="text" id="input" placeholder="Type a message..." />
+            <button id="send">Send</button>
+            <button id="voice">🎤</button>
+        </div>
+        <div class="suggestions" id="suggestions">
+            <div class="suggestion">What is AI?</div>
+            <div class="suggestion">Tell me about cars</div>
+            <div class="suggestion">What is climate change?</div>
+            <div class="suggestion">How does photosynthesis work?</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.basic.min.js"></script>
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendButton = document.getElementById('send');
+        const voiceButton = document.getElementById('voice');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const modeSelector = document.getElementById('mode');
+
+        const responses = {
+            PRO: [
+                { question: "hi hello", answer: "Hello! How can I assist you today?" },
+                { question: "what is artificial intelligence?", answer: "Artificial intelligence refers to the simulation of human intelligence in machines." },
+                { question: "what is climate change?", answer: "Climate change refers to significant changes in global temperatures and weather patterns over time." },
+                { question: "tell me about cars", answer: "Cars have transformed personal transportation and are essential in modern life." },
+                { question: "how does photosynthesis work?", answer: "Photosynthesis is the process by which green plants use sunlight to synthesize foods." }
+            ],
+            BETA: [
+                { question: "hi hello", answer: "Hi! I'm in BETA mode. How can I assist?" },
+                { question: "what is artificial intelligence?", answer: "AI is a system that can learn and adapt." },
+                { question: "what is climate change?", answer: "Climate change is a long-term change in temperature and typical weather patterns." },
+                { question: "tell me about cars", answer: "Cars are essential for modern transport, allowing mobility." },
+                { question: "how does photosynthesis work?", answer: "Plants convert sunlight into energy through photosynthesis." }
+            ],
+            PRO2: [
+                { question: "hi hello", answer: "Greetings! PRO2 mode activated. What do you need?" },
+                { question: "what is artificial intelligence?", answer: "PRO2 mode: AI mimics human reasoning and learning." },
+                { question: "what is climate change?", answer: "Climate change is the result of human activities affecting the environment." },
+                { question: "tell me about cars", answer: "Cars are vital for personal and commercial transportation." },
+                { question: "how does photosynthesis work?", answer: "Photosynthesis is how plants produce food using sunlight." }
+            ]
+        };
+
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            messageDiv.textContent = content;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight; // Scroll to bottom
+        }
+
+        function getBotResponse(userInput) {
+            const currentMode = modeSelector.value;
+
+            // Google Search functionality only for PRO2 mode
+            if (currentMode === "PRO2") {
+                const searchTerms = ['search for', 'google', 'find', 'look up'];
+                const isSearchRequest = searchTerms.some(term => userInput.toLowerCase().includes(term));
+                if (isSearchRequest) {
+                    const query = userInput.replace(/(search for|google|find|look up)/i, '').trim();
+                    if (query) {
+                        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                        return "Opening Google search for: " + query;
+                    } else {
+                        return "Please provide a search term.";
+                    }
+                }
+            }
+
+            // Fuzzy search for responses based on the current mode
+            const currentResponses = responses[currentMode];
+            const fuse = new Fuse(currentResponses, {
+                keys: ['question'],
+                threshold: 0.4
+            });
+
+            const result = fuse.search(userInput.toLowerCase());
+            if (result.length > 0) {
+                return result[0].item.answer;
+            }
+            return "Sorry, I'm not sure how to respond to that. Can you provide more details?";
+        }
+
+        sendButton.onclick = function() {
+            const userInput = input.value.trim();
+            if (userInput) {
+                addMessage(userInput, 'user');
+                const botResponse = getBotResponse(userInput);
+                addMessage(botResponse, 'bot');
+
+                // Feedback options
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'feedback';
+                feedbackDiv.innerHTML = 'Was this helpful? <button class="feedback-btn" data-value="yes">Yes</button> <button class="feedback-btn" data-value="no">No</button>';
+                messages.appendChild(feedbackDiv);
+
+                // Feedback button listeners
+                feedbackDiv.querySelectorAll('.feedback-btn').forEach(button => {
+                    button.onclick = function() {
+                        const value = this.getAttribute('data-value');
+                        addMessage(`Feedback received: ${value}`, 'user');
+                        feedbackDiv.remove(); // Remove feedback options after selection
+                    };
+                });
+
+                input.value = ''; // Clear input
+            }
+        };
+
+        suggestionsDiv.addEventListener('click', function(event) {
+            if (event.target.classList.contains('suggestion')) {
+                input.value = event.target.textContent;
+                sendButton.click();
+            }
+        });
+
+        // Check for SpeechRecognition support
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            voiceButton.onclick = function() {
+                recognition.start();
+                addMessage("Listening...", 'bot');
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                addMessage(transcript, 'user');
+                const botResponse = getBotResponse(transcript);
+                addMessage(botResponse, 'bot');
+            };
+
+            recognition.onerror = function(event) {
+                addMessage("Sorry, I couldn't recognize your voice. Please try again.", 'bot');
+            };
+
+            recognition.onend = function() {
+                addMessage("Voice recognition has ended.", 'bot');
+            };
+        } else {
+            voiceButton.disabled = false; // Disable the voice button if not supported
+            addMessage("Voice recognition is not supported in this browser.", 'bot');
+        }
+
+        input.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
+    
+</body>
+</html>

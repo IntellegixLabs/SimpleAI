@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledgeable Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        #messages {
+            height: 300px;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        #user-input {
+            display: flex;
+        }
+        #input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+            outline: none;
+        }
+        #send {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-top: 1px solid #ccc;
+        }
+        #send:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user {
+            text-align: right;
+            color: blue;
+        }
+        .bot {
+            text-align: left;
+            color: green;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.basic.min.js"></script>
+</head>
+<body>
+
+    <div id="chat-container">
+        <div id="messages"></div>
+        <div id="user-input">
+            <input type="text" id="input" placeholder="Type a message..." />
+            <button id="send">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendButton = document.getElementById('send');
+
+        const responses = [
+        				
+
+            { question: "hi hello", answer: "Hello! How can I help you today?" },
+            { question: "how are you?", answer: "I'm just a program, but thanks for asking!" },
+            { question: "what's your name?", answer: "I'm a simple chatbot created to assist you." },
+            { question: "bye", answer: "Goodbye! Have a great day!" },
+            { question: "what is the size of Hong Kong?", answer: "The size of Hong Kong is 1.11 KM²." },
+            { question: "tell me about cars", answer: "Cars have transformed personal transportation and are a key part of modern life." },
+            { question: "what is artificial intelligence?", answer: "Artificial intelligence refers to the simulation of human intelligence in machines." },
+            { question: "who invented the telephone?", answer: "Alexander Graham Bell is credited with inventing the telephone in 1876." },
+            { question: "what is the capital of France?", answer: "The capital of France is Paris." },
+            { question: "tell me about the solar system", answer: "The solar system consists of the Sun and the celestial bodies bound to it by gravity, including eight planets." },
+            { question: "what is quantum physics?", answer: "Quantum physics is a fundamental theory in physics that describes nature at the smallest scales." },
+            { question: "what is climate change?", answer: "Climate change refers to significant changes in global temperatures and weather patterns over time." },
+            { question: "who was Albert Einstein?", answer: "Albert Einstein was a theoretical physicist known for developing the theory of relativity." },
+            { question: "what is machine learning?", answer: "Machine learning is a branch of artificial intelligence that focuses on the development of algorithms that allow computers to learn from data." },
+            { question: "who is Isaac Newton?", answer: "Isaac Newton was a mathematician and physicist known for his laws of motion and universal gravitation." },
+            { question: "what is photosynthesis?", answer: "Photosynthesis is the process by which green plants use sunlight to synthesize foods with the help of chlorophyll." },
+            { question: "what are black holes?", answer: "Black holes are regions in space where the gravitational pull is so strong that nothing can escape from them." },
+            { question: "what is global warming?", answer: "Global warming is the long-term heating of Earth's climate system due to human activities, primarily fossil fuel burning." },
+            { question: "who was the first president of the USA?", answer: "George Washington was the first president of the United States, serving from 1789 to 1797." },
+            { question: "what is the Great Wall of China?", answer: "The Great Wall of China is a series of fortifications built to protect Chinese states from invasions." },
+            { question: "what is renewable energy?", answer: "Renewable energy comes from natural sources that can be replenished, such as solar, wind, and hydroelectric power." },
+            { question: "what is the theory of evolution?", answer: "The theory of evolution, developed by Charles Darwin, explains how species change over time through natural selection." },
+            { question: "what is DNA?", answer: "DNA, or deoxyribonucleic acid, is the molecule that carries the genetic instructions for life." },
+            { question: "what is the internet?", answer: "The internet is a global network of interconnected computers that communicate using standardized protocols." },
+            { question: "sorry.", answer: "It's fine, just don't do it again." },
+            { question: "what is a smartphone?", answer: "A smartphone is a mobile phone that includes advanced features like internet connectivity and applications." },
+            { question: "what is a programming language?", answer: "A programming language is a formal set of instructions that can be used to produce various kinds of output." },
+            { question: "what is the human brain?", answer: "The human brain is the central organ of the nervous system, responsible for cognition, emotions, and motor control." },
+            { question: "what is gravity?", answer: "Gravity is the force that attracts two bodies towards each other, particularly the pull of the Earth on objects." },
+            { question: "are you dumb", answer: "Hey! That is very mean!" },
+            { question: "what is a solar eclipse?", answer: "A solar eclipse occurs when the Moon passes between the Earth and the Sun, blocking all or part of the Sun's light." },
+            { question: "what is a lunar eclipse?", answer: "A lunar eclipse occurs when the Earth passes between the Sun and the Moon, causing the Earth's shadow to cover the Moon." },
+            { question: "what is the speed of light?", answer: "The speed of light in a vacuum is approximately 299,792 kilometers per second." },
+            { question: "what are the three states of matter?", answer: "The three states of matter are solid, liquid, and gas." },
+            { question: "what is the periodic table?", answer: "The periodic table is a tabular arrangement of chemical elements, organized by their atomic number." },
+            { question: "what is a comet?", answer: "A comet is an icy celestial body that, when passing close to the sun, heats up and releases gas and dust." },
+            { question: "what is the theory of relativity?", answer: "The theory of relativity, developed by Einstein, describes the relationship between space, time, and gravity." },
+            { question: "what is a virus?", answer: "A virus is a small infectious agent that can only replicate inside the living cells of an organism." },
+            { question: "what are vaccines?", answer: "Vaccines are biological preparations that provide immunity to a particular infectious disease." },
+            { question: "what is biodiversity?", answer: "Biodiversity refers to the variety of life in the world or in a particular habitat or ecosystem." },
+            { question: "what is the greenhouse effect?", answer: "The greenhouse effect is the warming of Earth's surface due to trapped heat from the Sun." },
+            { question: "what is the Milky Way?", answer: "The Milky Way is the galaxy that contains our solar system, composed of billions of stars." },
+            { question: "what is the Big Bang?", answer: "The Big Bang is the leading explanation for the origin of the universe, describing its expansion from a singularity." },
+            { question: "what is the human genome?", answer: "The human genome is the complete set of human DNA, including all of its genes." },
+            { question: "what is the function of the heart?", answer: "The heart pumps blood throughout the body, supplying oxygen and nutrients to tissues." },
+            { question: "what are the five senses?", answer: "The five senses are sight, hearing, touch, taste, and smell." },
+            { question: "what is a neuron?", answer: "A neuron is a nerve cell that transmits electrical impulses throughout the body." },
+            { question: "what is a food chain?", answer: "A food chain is a linear sequence of organisms through which nutrients and energy pass as one organism eats another." },
+            { question: "what is a predator?", answer: "A predator is an animal that hunts other animals for food." },
+            { question: "what is a herbivore?", answer: "A herbivore is an animal that primarily eats plants." },
+            { question: "what is a carnivore?", answer: "A carnivore is an animal that primarily eats meat." },
+            { question: "what is an omnivore?", answer: "An omnivore is an animal that eats both plants and animals." },
+            { question: "what is a habitat?", answer: "A habitat is the natural environment in which an organism lives, including all living and non-living factors." },
+            { question: "what is extinction?", answer: "Extinction is the end of an organism or a group of organisms, typically resulting in the loss of a species." },
+            { question: "what is conservation?", answer: "Conservation is the protection and preservation of natural resources, including wildlife and habitats." },
+            { question: "what is a natural disaster?", answer: "A natural disaster is a catastrophic event that occurs due to natural processes of the Earth." },
+            { question: "what is climate?", answer: "Climate refers to the long-term patterns and averages of weather in a particular area." },
+            { question: "what is weather?", answer: "Weather is the short-term state of the atmosphere at a specific time and place, including temperature and precipitation." },
+            { question: "what is a tsunami?", answer: "A tsunami is a series of ocean waves caused by any large and sudden disturbance of the sea." },
+            { question: "what is a volcano?", answer: "A volcano is an opening in the Earth's crust through which molten lava, ash, and gases are ejected." },
+            { question: "what is sediment?", answer: "Sediment is solid material that is moved and deposited in a new location by wind, water, or ice." },
+            { question: "what is erosion?", answer: "Erosion is the process by which soil and rock are removed from the Earth's surface by natural processes." },
+            { question: "what is JavaScript, HTML, and CSS?", answer: "JavaScript is an interpreter programming language mostly for user interfaces, HTML is HyperTextMarkupLanguage and is for websites and it is how you are looking at a textbox and it is also the host for the JavaScript code and CSS code, CSS is Cascading Style Sheets is a stylesheet language used to describe the presentation of a document written in HTML or XML." },
+            { question: "what are the functionality of you? what can you do? tell me about you. ", answer: "I am a simple AI chatbot created by CrazyBots. I am programmed in JavaScript, HTML and CSS." },
+			
+            // Add more entries as needed...
+        ];
+
+        const fuse = new Fuse(responses, {
+            keys: ['question'],
+            threshold: 0.4 // Adjust this value for more or less strict matching
+        });
+
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            messageDiv.textContent = content;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight; // Scroll to bottom
+        }
+
+        function evaluateExpression(expr) {
+            // Allow only numbers and basic operators
+            const sanitizedExpr = expr.replace(/[^0-9+\-*/(). ]/g, '');
+            try {
+                const result = Function(`'use strict'; return (${sanitizedExpr})`)();
+                return `The result is: ${result}`;
+            } catch (error) {
+                return "Sorry, I couldn't compute that. Please enter a valid expression.";
+            }
+        }
+
+        function getBotResponse(userInput) {
+            // Check for math expressions
+            if (/^[\d\s\+\-\*\/\(\)]+$/.test(userInput)) {
+                return evaluateExpression(userInput);
+            }
+
+            // Use Fuse.js for text matching
+            const result = fuse.search(userInput);
+            if (result.length > 0) {
+                return result[0].item.answer;
+            }
+            return "Sorry, I'm not sure how to respond to that.";
+        }
+
+        sendButton.onclick = function() {
+            const userInput = input.value.trim();
+            if (userInput) {
+                addMessage(userInput, 'user');
+                const botResponse = getBotResponse(userInput);
+                addMessage(botResponse, 'bot');
+                input.value = ''; // Clear input
+            }
+        };
+
+        input.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
+    
+</body>
+</html>
